@@ -1,0 +1,1 @@
+# somfy-automation
