@@ -15,7 +15,10 @@ describe('Somfy', () => {
 
   it('should construct a correctly formatted request body based on input', () => {
     // Arrange
-    const somfy = Somfy(console, httpClient, somfyOptions);
+    const somfy = Somfy({
+      httpClient,
+      options: somfyOptions,
+    });
 
     // Act
     somfy.exec([
@@ -47,7 +50,10 @@ describe('Somfy', () => {
 
   it('should construct a correct request for multiple devices', () => {
     // Arrange
-    const somfy = Somfy(console, httpClient, somfyOptions);
+    const somfy = Somfy({
+      httpClient,
+      options: somfyOptions,
+    });
 
     // Act
     somfy.exec([

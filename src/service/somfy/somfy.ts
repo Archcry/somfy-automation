@@ -5,9 +5,22 @@ export interface SomfyOptions {
   apiKey: string;
 }
 
+export interface SomfyConstructorArgs {
+  httpClient: HttpClient;
+  options: SomfyOptions;
+}
+
 export type HttpClient = (url: RequestInfo, init?: RequestInit) => Promise<Response>;
 
 export type CommandParameter = string | number;
+
+export interface SomfyResponse {
+  execId: string;
+}
+
+export interface ISomfy {
+  exec: (commands: Command[]) => Promise<SomfyResponse>;
+}
 
 export interface Command {
   deviceUrl: string;
@@ -15,7 +28,7 @@ export interface Command {
   parameters?: CommandParameter[];
 }
 
-export const Somfy = (logger: Pick<Console, 'error'>, httpClient: HttpClient, options: SomfyOptions) => {
+export const Somfy = ({ httpClient, options }: SomfyConstructorArgs) => {
   const exec = (commands: Command[]) => {
     const url = `http://${options.host}/enduser-mobile-web/1/enduserAPI/exec/apply`;
 
