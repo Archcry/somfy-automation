@@ -1,0 +1,7 @@
+# Ignore everything
+**/*
+
+# Include relevant files
+!src/**/*.js
+!package.json
+!package-lock.json
