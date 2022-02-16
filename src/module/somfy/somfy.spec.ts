@@ -1,6 +1,6 @@
+import { Somfy as SomfyEvents } from '../../events';
 import { EventAggregator, IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { Somfy } from './somfy';
-import { Somfy as SomfyEvents } from '../../events';
 
 const toCallableMethods = (spy: jest.SpyInstance) => {
   return spy.mock.calls.reduce(

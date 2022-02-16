@@ -9,7 +9,6 @@ describe('Somfy', () => {
     host: '127.0.0.1',
     apiKey: '123abc',
   };
-  const apiKey = '123abc';
 
   afterEach(() => jest.clearAllMocks());
 

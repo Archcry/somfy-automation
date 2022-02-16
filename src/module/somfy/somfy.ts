@@ -1,5 +1,5 @@
-import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { Somfy as SomfyEvents, SomfyEventData, SomfySetDeploymentData } from '../../events';
+import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { CommandParameter, ISomfy as SomfyService } from '../../service/somfy/somfy';
 
 export interface SomfyModuleArgs {

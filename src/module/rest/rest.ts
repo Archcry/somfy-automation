@@ -1,9 +1,8 @@
+import bodyParser from 'body-parser';
 import { Express } from 'express';
 import basicAuth from 'express-basic-auth';
-import bodyParser from 'body-parser';
+import { Somfy as SomfyEvents, SomfyEventData, SomfySetDeploymentData } from '../../events';
 import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
-import { Somfy as SomfyEvents, SomfySetDeploymentData } from '../../events';
-import { SomfyEventData } from '../../events';
 
 export interface RestModuleOptions {
   app: Express;

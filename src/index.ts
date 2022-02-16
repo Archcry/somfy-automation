@@ -1,10 +1,9 @@
 import express from 'express';
-import { EventAggregator } from './lib/eventaggregator/eventAggregator';
-
 import fetch from 'node-fetch';
-import { Somfy as SomfyService } from './service/somfy/somfy';
-import { Somfy as SomfyModule } from './module/somfy/somfy';
+import { EventAggregator } from './lib/eventaggregator/eventAggregator';
 import { Rest as RestModule } from './module/rest/rest';
+import { Somfy as SomfyModule } from './module/somfy/somfy';
+import { Somfy as SomfyService } from './service/somfy/somfy';
 
 const port = process.env['PORT'] || 3000;
 
