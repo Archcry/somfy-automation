@@ -21,12 +21,7 @@ export const Somfy = ({ eventAggregator: ea, somfyService, logger }: SomfyModule
   const execForDevices = (devices: string[]) => (command: string) => {
     const commands = devices.map(createCommand(command));
 
-    somfyService
-      .exec(commands)
-      .then(() => {
-        logSuccess(command)();
-      })
-      .catch(logError(command));
+    somfyService.exec(commands).then(logSuccess(command)).catch(logError(command));
   };
 
   return {

@@ -1,37 +1,26 @@
 import express from 'express';
+import * as fs from 'fs';
 import fetch from 'node-fetch';
+import { environment } from './environment';
 import { EventAggregator } from './lib/eventaggregator/eventAggregator';
 import { Rest as RestModule } from './module/rest/rest';
 import { Somfy as SomfyModule } from './module/somfy/somfy';
 import { Somfy as SomfyService } from './service/somfy/somfy';
+import { DeviceGroup, Schedule } from './types';
 
-const port = process.env['PORT'] || 3000;
+const deviceGroups: DeviceGroup[] = JSON.parse(fs.readFileSync(environment.paths.deviceGroups, 'utf-8'));
+const schedules: Schedule[] = JSON.parse(fs.readFileSync(environment.paths.schedules, 'utf-8'));
 
 const app = express();
 
-const getFromEnvOrThrow = (key: string): string => {
-  if (process.env[key]) {
-    return process.env[key] as string;
-  }
-
-  throw new Error(`Could not retrieve value for key "${key}" from environment`);
-};
-
-app.get('/', (_, res) => {
-  res.send('Hello World!');
-});
-
-app.listen(port, () => {
-  console.log(`App listening on port ${port}`);
+app.listen(environment.port, () => {
+  console.log(`App listening on port ${environment.port}`);
 
   const eventAggregator = EventAggregator(console);
 
   const somfyService = SomfyService({
     httpClient: fetch,
-    options: {
-      host: getFromEnvOrThrow('SOMFY_API_HOST'),
-      apiKey: getFromEnvOrThrow('SOMFY_API_KEY'),
-    },
+    options: environment.somfy,
   });
 
   SomfyModule({
@@ -40,12 +29,13 @@ app.listen(port, () => {
     somfyService,
   }).start();
 
-  const apiUserUsername = getFromEnvOrThrow('API_BASIC_AUTH_USERNAME');
-  const apiUserPassword = getFromEnvOrThrow('API_BASIC_AUTH_PASSWORD');
+  const apiUserUsername = environment.basicAuth.username;
+  const apiUserPassword = environment.basicAuth.password;
 
   RestModule({
     app,
     eventAggregator,
+    deviceGroups,
     users: {
       [apiUserUsername]: apiUserPassword,
     },
