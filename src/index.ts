@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import { environment } from './environment';
 import { EventAggregator } from './lib/eventaggregator/eventAggregator';
 import { Rest as RestModule } from './module/rest/rest';
+import { Scheduler as SchedulerModule } from './module/scheduler/scheduler';
 import { Somfy as SomfyModule } from './module/somfy/somfy';
 import { Somfy as SomfyService } from './service/somfy/somfy';
 import { DeviceGroup, Schedule } from './types';
@@ -39,5 +40,12 @@ app.listen(environment.port, () => {
     users: {
       [apiUserUsername]: apiUserPassword,
     },
+  }).start();
+
+  SchedulerModule({
+    logger: console,
+    eventAggregator,
+    schedules,
+    deviceGroups,
   }).start();
 });
