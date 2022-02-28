@@ -37,6 +37,7 @@ app.listen(environment.port, () => {
     app,
     eventAggregator,
     deviceGroups,
+    schedules,
     users: {
       [apiUserUsername]: apiUserPassword,
     },

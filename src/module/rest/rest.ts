@@ -3,20 +3,21 @@ import { Express } from 'express';
 import basicAuth from 'express-basic-auth';
 import { Somfy as SomfyEvents, SomfyEventData } from '../../events';
 import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
-import { DeviceGroup } from '../../types';
+import { DeviceGroup, Schedule } from '../../types';
 
 export interface RestModuleOptions {
   app: Express;
   eventAggregator: IEventAggregator;
   users: { [username: string]: string };
   deviceGroups: DeviceGroup[];
+  schedules: Schedule[];
 }
 
 export interface DeviceGroupReq {
   deviceGroups: string[];
 }
 
-export const Rest = ({ app, users, eventAggregator, deviceGroups }: RestModuleOptions) => {
+export const Rest = ({ app, users, eventAggregator, deviceGroups, schedules }: RestModuleOptions) => {
   const toSomfyEventData = (deviceGroupUids: string[]) => {
     const devices = new Set(
       deviceGroupUids
@@ -55,6 +56,10 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups }: RestModuleOp
             name: dg.name,
           }))
         );
+      });
+
+      app.get<Schedule[]>('/shutter/schedules', (_, res) => {
+        res.send(schedules);
       });
 
       app.post<DeviceGroupReq>('/shutter/up', (req, res) => {
