@@ -11,27 +11,21 @@ export interface SchedulerArgs {
   deviceGroups: DeviceGroup[];
 }
 
-interface Executable {
-  execute: () => void;
-}
-
-type ExecutableFixedTimeSchedule = FixedTimeSchedule & Executable;
-type ExecutableSunCalcSchedule = SunCalcSchedule & Executable;
-type ExecutableSchedule = Schedule & Executable;
+type Executable<T> = T & { execute: () => void };
 
 const checkIntervalMs = 500;
 const debounceMs = 60000;
 const debounceImmidiate = true;
 
 export const Scheduler = ({ logger, eventAggregator, schedules, deviceGroups }: SchedulerArgs) => {
-  const isFixedTimeSchedule = (schedule: ExecutableSchedule): schedule is ExecutableFixedTimeSchedule =>
+  const isFixedTimeSchedule = (schedule: Executable<Schedule>): schedule is Executable<FixedTimeSchedule> =>
     schedule.type === 'fixed_time';
 
-  const isSuncalcSchedule = (schedule: ExecutableSchedule): schedule is ExecutableSunCalcSchedule =>
+  const isSuncalcSchedule = (schedule: Executable<Schedule>): schedule is Executable<SunCalcSchedule> =>
     schedule.type === 'suncalc';
 
   const isCorrectDow = (now: DateTime) => (schedule: Schedule) => {
-    return schedule.dow.includes(now.weekdayShort.toLocaleLowerCase());
+    return schedule.dow.includes(now.weekdayShort.toLowerCase());
   };
 
   const isCorrectTime = (now: DateTime) => (schedule: FixedTimeSchedule) => {
@@ -66,7 +60,7 @@ export const Scheduler = ({ logger, eventAggregator, schedules, deviceGroups }: 
 
   return {
     start: () => {
-      const scheduledTasks: ExecutableSchedule[] = schedules.map((schedule) => ({
+      const scheduledTasks: Executable<Schedule>[] = schedules.map((schedule) => ({
         ...schedule,
         execute: debounce(() => fire(schedule), debounceMs, debounceImmidiate),
       }));
