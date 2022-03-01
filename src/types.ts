@@ -10,7 +10,7 @@ export interface Command {
 }
 
 export interface BaseSchedule {
-  dow: 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
+  dow: string[];
   deviceGroups: string[];
   command: Command;
 }
