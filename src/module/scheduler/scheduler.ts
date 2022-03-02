@@ -6,7 +6,7 @@ import { DeviceGroup, FixedTimeSchedule, Schedule, SunCalcSchedule } from '../..
 
 export interface SchedulerArgs {
   logger: Pick<Console, 'info' | 'debug'>;
-  eventAggregator: IEventAggregator;
+  eventAggregator: Pick<IEventAggregator, 'publish'>;
   schedules: Schedule[];
   deviceGroups: DeviceGroup[];
 }

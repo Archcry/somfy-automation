@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon';
 import suncalc from 'suncalc';
 import { Somfy as SomfyEvents } from '../../events';
-import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { FixedTimeSchedule, SunCalcSchedule } from '../../types';
 import { Scheduler } from './scheduler';
 
@@ -30,10 +29,8 @@ describe('Scheduler Module', () => {
     debug: jest.fn(),
   };
 
-  const eventAggregator: IEventAggregator = {
+  const eventAggregator = {
     publish: jest.fn(),
-    subscribe: jest.fn(),
-    subscribeOnce: jest.fn(),
   };
 
   const deviceGroup = {

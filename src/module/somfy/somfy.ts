@@ -3,8 +3,8 @@ import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { CommandParameter, ISomfy as SomfyService } from '../../service/somfy/somfy';
 
 export interface SomfyModuleArgs {
-  eventAggregator: IEventAggregator;
-  somfyService: SomfyService;
+  eventAggregator: Pick<IEventAggregator, 'subscribe'>;
+  somfyService: Pick<SomfyService, 'exec'>;
   logger: Pick<Console, 'info' | 'error'>;
 }
 
