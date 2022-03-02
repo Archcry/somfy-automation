@@ -6,8 +6,8 @@ import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { DeviceGroup, Schedule } from '../../types';
 
 export interface RestModuleOptions {
-  app: Express;
-  eventAggregator: IEventAggregator;
+  app: Pick<Express, 'get' | 'post' | 'use'>;
+  eventAggregator: Pick<IEventAggregator, 'publish'>;
   users: { [username: string]: string };
   deviceGroups: DeviceGroup[];
   schedules: Schedule[];
