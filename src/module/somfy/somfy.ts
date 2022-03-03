@@ -1,11 +1,12 @@
 import { Somfy as SomfyEvents, SomfyEventData, SomfySetDeploymentData } from '../../events';
 import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
+import { ILogger } from '../../lib/logger/logger';
 import { CommandParameter, ISomfy as SomfyService } from '../../service/somfy/somfy';
 
 export interface SomfyModuleArgs {
   eventAggregator: Pick<IEventAggregator, 'subscribe'>;
   somfyService: Pick<SomfyService, 'exec'>;
-  logger: Pick<Console, 'info' | 'error'>;
+  logger: Pick<ILogger, 'info' | 'error'>;
 }
 
 export const Somfy = ({ eventAggregator: ea, somfyService, logger }: SomfyModuleArgs) => {

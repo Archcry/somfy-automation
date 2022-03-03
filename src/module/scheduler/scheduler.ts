@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import SunCalc from 'suncalc';
 import { Somfy as SomfyEvents } from '../../events';
 import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
+import { ILogger } from '../../lib/logger/logger';
 import { DeviceGroup, FixedTimeSchedule, Schedule, SunCalcSchedule } from '../../types';
 
 export const mapToEvent = (command: string) =>
@@ -17,7 +18,7 @@ export const mapToEvent = (command: string) =>
   }[command]);
 
 export interface SchedulerArgs {
-  logger: Pick<Console, 'info' | 'debug'>;
+  logger: Pick<ILogger, 'info' | 'debug'>;
   eventAggregator: Pick<IEventAggregator, 'publish'>;
   schedules: Schedule[];
   deviceGroups: DeviceGroup[];

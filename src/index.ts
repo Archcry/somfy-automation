@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import fetch from 'node-fetch';
 import { environment } from './environment';
 import { EventAggregator } from './lib/eventaggregator/eventAggregator';
+import { Logger, LoggerArgs } from './lib/logger/logger';
 import { Rest as RestModule } from './module/rest/rest';
 import { Scheduler as SchedulerModule } from './module/scheduler/scheduler';
 import { Somfy as SomfyModule } from './module/somfy/somfy';
@@ -14,8 +15,18 @@ const schedules: Schedule[] = JSON.parse(fs.readFileSync(environment.paths.sched
 
 const app = express();
 
+const loggerOptions: Omit<LoggerArgs, 'componentName'> = {
+  baseLogger: console,
+  logLevel: 'info',
+};
+
 app.listen(environment.port, () => {
-  console.log(`App listening on port ${environment.port}`);
+  const logger = Logger({
+    ...loggerOptions,
+    componentName: 'Main',
+  });
+
+  logger.info(`App listening on port ${environment.port}`);
 
   const eventAggregator = EventAggregator(console);
 
@@ -25,9 +36,22 @@ app.listen(environment.port, () => {
   });
 
   SomfyModule({
-    logger: console,
+    logger: Logger({
+      ...loggerOptions,
+      componentName: 'SomfyModule',
+    }),
     eventAggregator,
     somfyService,
+  }).start();
+
+  SchedulerModule({
+    logger: Logger({
+      ...loggerOptions,
+      componentName: 'SchedulerModule',
+    }),
+    eventAggregator,
+    schedules,
+    deviceGroups,
   }).start();
 
   const apiUserUsername = environment.basicAuth.username;
@@ -41,12 +65,5 @@ app.listen(environment.port, () => {
     users: {
       [apiUserUsername]: apiUserPassword,
     },
-  }).start();
-
-  SchedulerModule({
-    logger: console,
-    eventAggregator,
-    schedules,
-    deviceGroups,
   }).start();
 });
