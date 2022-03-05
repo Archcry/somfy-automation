@@ -115,6 +115,7 @@ describe('Rest Module', () => {
     // Arrange
     const schedules: FixedTimeSchedule[] = [
       {
+        uid: '7c958d28-9c7b-11ec-b909-0242ac120002',
         type: 'fixed_time',
         dow: ['mon'],
         deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3'],
@@ -146,6 +147,7 @@ describe('Rest Module', () => {
     expect(res.send).toBeCalledTimes(1);
     expect(res.send).toBeCalledWith([
       {
+        uid: '7c958d28-9c7b-11ec-b909-0242ac120002',
         type: 'fixed_time',
         dow: ['mon'],
         deviceGroups: [

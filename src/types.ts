@@ -16,6 +16,7 @@ export interface Command {
 }
 
 export interface BaseSchedule {
+  uid: string;
   dow: string[];
   deviceGroups: string[];
   command: Command;

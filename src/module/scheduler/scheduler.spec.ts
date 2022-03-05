@@ -72,6 +72,7 @@ describe('Scheduler Module', () => {
   it("should fire an event when it's a configured time", () => {
     // Arrange
     const schedule: FixedTimeSchedule = {
+      uid: '63308acc-9c7b-11ec-b909-0242ac120002',
       type: 'fixed_time',
       dow: ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
       deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3', '5cd6c40a-9c64-11ec-b909-0242ac120002'],
@@ -114,6 +115,7 @@ describe('Scheduler Module', () => {
   it('should fire an event at sunrise', () => {
     // Arrange
     const schedule: SunCalcSchedule = {
+      uid: '6b1e9206-9c7b-11ec-b909-0242ac120002',
       type: 'suncalc',
       dow: ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
       deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3', '5cd6c40a-9c64-11ec-b909-0242ac120002'],
@@ -169,6 +171,7 @@ describe('Scheduler Module', () => {
   it('should not fire an event on a day that is not on the schedule', () => {
     // Arrange
     const schedule: FixedTimeSchedule = {
+      uid: '6fe68942-9c7b-11ec-b909-0242ac120002',
       type: 'fixed_time',
       dow: ['sun', 'tue', 'wed', 'thu', 'fri', 'sat'],
       deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3'],
