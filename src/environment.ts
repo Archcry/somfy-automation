@@ -17,6 +17,7 @@ export const environment = {
     password: getFromEnvOrThrow('API_BASIC_AUTH_PASSWORD'),
   },
   paths: {
+    devices: process.env['DEVICES_PATH'] ?? '/opt/somfy-automation/devices.json',
     deviceGroups: process.env['DEVICE_GROUPS_PATH'] ?? '/opt/somfy-automation/deviceGroups.json',
     schedules: process.env['SCHEDULE_PATH'] ?? '/opt/somfy-automation/schedules.json',
   },

@@ -1,3 +1,9 @@
+export interface Device {
+  uid: string;
+  name: string;
+  deviceUrl: string;
+}
+
 export interface DeviceGroup {
   uid: string;
   name: string;
