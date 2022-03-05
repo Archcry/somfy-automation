@@ -1,21 +1,10 @@
 import { debounce } from 'debounce';
 import { DateTime } from 'luxon';
 import SunCalc from 'suncalc';
-import { Somfy as SomfyEvents } from '../../events';
+import { commandToSomfyEvent } from '../../events';
 import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { ILogger } from '../../lib/logger/logger';
 import { Device, DeviceGroup, FixedTimeSchedule, Schedule, SunCalcSchedule } from '../../types';
-
-export const mapToEvent = (command: string) =>
-  ({
-    up: SomfyEvents.Up,
-    down: SomfyEvents.Down,
-    setDeploymenty: SomfyEvents.SetDeployment,
-    wink: SomfyEvents.Wink,
-    identify: SomfyEvents.Identify,
-    stop: SomfyEvents.Stop,
-    my: SomfyEvents.My,
-  }[command]);
 
 export interface SchedulerArgs {
   logger: Pick<ILogger, 'info' | 'debug'>;
@@ -70,7 +59,7 @@ export const Scheduler = ({ logger, eventAggregator, schedules, deviceGroups, de
       .filter((device): device is Device => !!device)
       .map(({ deviceUrl }) => deviceUrl);
 
-    const event = mapToEvent(schedule.command.name);
+    const event = commandToSomfyEvent(schedule.command.name);
 
     if (event) {
       eventAggregator.publish(event, { devices: deviceUrls });

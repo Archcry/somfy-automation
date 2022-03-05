@@ -10,8 +10,10 @@ export interface DeviceGroup {
   devices: string[];
 }
 
+export type CommandName = 'up' | 'down' | 'setDeployment' | 'wink' | 'stop' | 'my';
+
 export interface Command {
-  name: string;
+  name: CommandName;
   parameters: string[];
 }
 

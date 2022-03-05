@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser';
 import { Express } from 'express';
 import basicAuth from 'express-basic-auth';
-import { Somfy as SomfyEvents, SomfyEventData } from '../../events';
+import { commandToSomfyEvent, Somfy as SomfyEvents, SomfyEventData } from '../../events';
 import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { Device, DeviceGroup, Schedule } from '../../types';
 
@@ -75,6 +75,26 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
             deviceGroups: mapDeviceGroups(dgs),
           }))
         );
+      });
+
+      app.post<unknown, string, { schedule: string }>('/schedule/execute', (req, res) => {
+        const schedule = schedules.find(({ uid }) => req.body.schedule === uid);
+
+        if (schedule) {
+          const deviceUrls = toDeviceUrls(
+            schedule.deviceGroups
+              .flatMap((deviceGroupUid) => deviceGroups.find(({ uid }) => deviceGroupUid === uid)?.devices)
+              .filter(filterUndefined)
+          );
+
+          const event = commandToSomfyEvent(schedule.command.name);
+
+          eventAggregator.publish(event, { devices: deviceUrls });
+
+          res.send('ok');
+        }
+
+        res.status(404).send();
       });
 
       app.post<unknown, string, DevicesReq>('/shutter/up', (req, res) => {

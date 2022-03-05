@@ -65,7 +65,15 @@ describe('Rest Module', () => {
   it('should register the correct handlers', () => {
     // Arrange
     const expectedEndpoints = {
-      post: ['/shutter/up', '/shutter/down', '/shutter/wink', '/shutter/identify', '/shutter/stop', '/shutter/my'],
+      post: [
+        '/shutter/up',
+        '/shutter/down',
+        '/shutter/wink',
+        '/shutter/identify',
+        '/shutter/stop',
+        '/shutter/my',
+        '/schedule/execute',
+      ],
       get: ['/', '/shutter/deviceGroups', '/shutter/schedules'],
     };
 
@@ -207,6 +215,15 @@ describe('Rest Module', () => {
 
   it('should fire an event on all post handlers', () => {
     // Arrange
+    const endpointsUnderTest = [
+      '/shutter/up',
+      '/shutter/down',
+      '/shutter/wink',
+      '/shutter/identify',
+      '/shutter/stop',
+      '/shutter/my',
+    ];
+
     Rest({
       schedules: [],
       deviceGroups,
@@ -220,23 +237,71 @@ describe('Rest Module', () => {
     const postEndpoints: { [key: string]: any } = getEndpointMethods(app).post;
 
     // Act & Assert
-    Object.entries(postEndpoints).forEach(([url, endpoint]) => {
-      const req = {
-        body: { devices: ['068dfc0e-9c63-11ec-b909-0242ac120002', '2f9cb9e0-9c64-11ec-b909-0242ac120002'] },
-      };
-      const res = { send: jest.fn() };
+    Object.entries(postEndpoints)
+      .filter(([url]) => endpointsUnderTest.includes(url))
+      .forEach(([url, endpoint]) => {
+        const req = {
+          body: { devices: ['068dfc0e-9c63-11ec-b909-0242ac120002', '2f9cb9e0-9c64-11ec-b909-0242ac120002'] },
+        };
+        const res = { send: jest.fn() };
 
-      endpoint(req, res);
+        endpoint(req, res);
 
-      expect(res.send).toBeCalledTimes(1);
-      expect(res.send).toBeCalledWith('ok');
+        expect(res.send).toBeCalledTimes(1);
+        expect(res.send).toBeCalledWith('ok');
 
-      expect(eventAggregator.publish).toBeCalledWith(
-        endpointToSomfyEventMap[url],
-        expect.objectContaining({
-          devices: expect.arrayContaining(devices.map(({ deviceUrl }) => deviceUrl)),
-        })
-      );
+        expect(eventAggregator.publish).toBeCalledWith(
+          endpointToSomfyEventMap[url],
+          expect.objectContaining({
+            devices: expect.arrayContaining(devices.map(({ deviceUrl }) => deviceUrl)),
+          })
+        );
+      });
+  });
+
+  it('should execute the schedule immidiately upon calling /schedule/execute', () => {
+    // Arrange
+    const schedule: FixedTimeSchedule = {
+      uid: '7c958d28-9c7b-11ec-b909-0242ac120002',
+      type: 'fixed_time',
+      dow: ['mon'],
+      deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3'],
+      timezone: 'Europe/Amsterdam',
+      time: '11:00',
+      command: {
+        name: 'up',
+        parameters: [],
+      },
+    };
+
+    Rest({
+      schedules: [schedule],
+      deviceGroups,
+      devices,
+      users: {},
+      eventAggregator,
+      app,
+    }).start();
+
+    const post = getEndpointMethods(app).post['/schedule/execute'];
+
+    const sendResFn = jest.fn();
+    const res = {
+      send: sendResFn,
+      status: jest.fn().mockImplementation(() => ({
+        send: sendResFn,
+      })),
+    };
+
+    // Act
+    const req = { body: { schedule: '7c958d28-9c7b-11ec-b909-0242ac120002' } };
+
+    post(req, res);
+
+    // Assert
+    expect(res.send).toBeCalledWith('ok');
+    expect(eventAggregator.publish).toBeCalledWith(SomfyEvents.Up, {
+      devices: ['io://1234-5678-9101/1234567'],
     });
   });
 });

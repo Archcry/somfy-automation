@@ -1,3 +1,5 @@
+import { CommandName } from './types';
+
 export interface SomfyEventData {
   devices: string[];
 }
@@ -20,3 +22,14 @@ export enum Somfy {
   Stop = 'somfy:stop',
   My = 'somfy:my',
 }
+
+export const commandToSomfyEvent = (command: CommandName) => {
+  return {
+    up: Somfy.Up,
+    down: Somfy.Down,
+    setDeployment: Somfy.SetDeployment,
+    wink: Somfy.Wink,
+    stop: Somfy.Stop,
+    my: Somfy.My,
+  }[command];
+};
