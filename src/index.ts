@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import fetch from 'node-fetch';
 import { environment } from './environment';
 import { EventAggregator } from './lib/eventaggregator/eventAggregator';
-import { Logger, LoggerArgs } from './lib/logger/logger';
+import { Logger, LoggerArgs, LogLevel } from './lib/logger/logger';
 import { Rest as RestModule } from './module/rest/rest';
 import { Scheduler as SchedulerModule } from './module/scheduler/scheduler';
 import { Somfy as SomfyModule } from './module/somfy/somfy';
@@ -17,7 +17,7 @@ const app = express();
 
 const loggerOptions: Omit<LoggerArgs, 'componentName'> = {
   baseLogger: console,
-  logLevel: 'info',
+  logLevel: LogLevel.Info,
 };
 
 app.listen(environment.port, () => {
