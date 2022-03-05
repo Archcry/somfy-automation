@@ -3,6 +3,7 @@ import { Express } from 'express';
 import basicAuth from 'express-basic-auth';
 import { commandToSomfyEvent, Somfy as SomfyEvents, SomfyEventData } from '../../events';
 import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
+import { ILogger } from '../../lib/logger/logger';
 import { Device, DeviceGroup, Schedule } from '../../types';
 
 export interface RestModuleOptions {
@@ -11,6 +12,7 @@ export interface RestModuleOptions {
   users: { [username: string]: string };
   deviceGroups: DeviceGroup[];
   devices: Device[];
+  logger: Pick<ILogger, 'info'>;
   schedules: Schedule[];
 }
 
@@ -18,7 +20,7 @@ export interface DevicesReq {
   devices: string[];
 }
 
-export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, schedules }: RestModuleOptions) => {
+export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, schedules, logger }: RestModuleOptions) => {
   const filterUndefined = <T>(entry: T | undefined): entry is T => !!entry;
 
   const toDeviceUrls = (deviceUids: string[]) => {
@@ -44,8 +46,8 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
 
       app.use(bodyParser.json());
 
-      app.get('/', (_, res) => {
-        res.send('Hello World!');
+      app.get<unknown, { hello: 'world' }>('/', (_, res) => {
+        res.send({ hello: 'world' });
       });
 
       type DeviceGroupResp = Array<Omit<DeviceGroup, 'devices'> & { devices: Array<Omit<Device, 'deviceUrl'>> }>;
@@ -78,6 +80,8 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
       });
 
       app.post<unknown, { success: boolean }, { schedule: string }>('/schedule/execute', (req, res) => {
+        logger.info(`Received schedule execute command for schedule with uid "${req.body.schedule}"`);
+
         const schedule = schedules.find(({ uid }) => req.body.schedule === uid);
 
         if (schedule) {
@@ -98,36 +102,48 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
       });
 
       app.post<unknown, { success: boolean }, DevicesReq>('/shutter/up', (req, res) => {
+        logger.info(`Received "up" command for devices with uids [${req.body.devices.join(', ')}]`);
+
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Up, { devices: toDeviceUrls(req.body.devices) });
 
         res.send({ success: true });
       });
 
       app.post<unknown, { success: boolean }, DevicesReq>('/shutter/down', (req, res) => {
+        logger.info(`Received "down" command for devices with uids [${req.body.devices.join(', ')}]`);
+
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Down, { devices: toDeviceUrls(req.body.devices) });
 
         res.send({ success: true });
       });
 
       app.post<unknown, { success: boolean }, DevicesReq>('/shutter/wink', (req, res) => {
+        logger.info(`Received "wink" command for devices with uids [${req.body.devices.join(', ')}]`);
+
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Wink, { devices: toDeviceUrls(req.body.devices) });
 
         res.send({ success: true });
       });
 
       app.post<unknown, { success: boolean }, DevicesReq>('/shutter/identify', (req, res) => {
+        logger.info(`Received "identify" command for devices with uids [${req.body.devices.join(', ')}]`);
+
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Identify, { devices: toDeviceUrls(req.body.devices) });
 
         res.send({ success: true });
       });
 
       app.post<unknown, { success: boolean }, DevicesReq>('/shutter/stop', (req, res) => {
+        logger.info(`Received "stop" command for devices with uids [${req.body.devices.join(', ')}]`);
+
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Stop, { devices: toDeviceUrls(req.body.devices) });
 
         res.send({ success: true });
       });
 
       app.post<unknown, { success: boolean }, DevicesReq>('/shutter/my', (req, res) => {
+        logger.info(`Received "my" command for devices with uids [${req.body.devices.join(', ')}]`);
+
         eventAggregator.publish<SomfyEventData>(SomfyEvents.My, { devices: toDeviceUrls(req.body.devices) });
 
         res.send({ success: true });

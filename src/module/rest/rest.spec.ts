@@ -12,6 +12,10 @@ const endpointToSomfyEventMap: { [key: string]: SomfyEvents } = {
   '/shutter/my': SomfyEvents.My,
 };
 
+const logger = {
+  info: jest.fn(),
+};
+
 const getEndpointMethods = (app: { get: jest.Mock; post: jest.Mock }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const reduceFn = (prev: any, cur: any[]) => ({
@@ -85,6 +89,7 @@ describe('Rest Module', () => {
       users: {},
       eventAggregator,
       app,
+      logger,
     }).start();
 
     // Assert
@@ -106,6 +111,7 @@ describe('Rest Module', () => {
       users: {},
       eventAggregator,
       app,
+      logger,
     }).start();
 
     const rootEndpoint = getEndpointMethods(app).get['/'];
@@ -116,7 +122,7 @@ describe('Rest Module', () => {
 
     // Assert
     expect(resHandler.send).toBeCalledTimes(1);
-    expect(resHandler.send).toBeCalledWith('Hello World!');
+    expect(resHandler.send).toBeCalledWith({ hello: 'world' });
   });
 
   it('should return the schedules on GET /shutter/schedules', () => {
@@ -143,6 +149,7 @@ describe('Rest Module', () => {
       users: {},
       eventAggregator,
       app,
+      logger,
     }).start();
 
     const schedulesEndpoint = getEndpointMethods(app).get['/shutter/schedules'];
@@ -189,6 +196,7 @@ describe('Rest Module', () => {
       users: {},
       eventAggregator,
       app,
+      logger,
     }).start();
 
     const deviceGroupsEndpoint = getEndpointMethods(app).get['/shutter/deviceGroups'];
@@ -231,6 +239,7 @@ describe('Rest Module', () => {
       users: {},
       eventAggregator,
       app,
+      logger,
     }).start();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -249,6 +258,12 @@ describe('Rest Module', () => {
 
         expect(res.send).toBeCalledTimes(1);
         expect(res.send).toBeCalledWith({ success: true });
+
+        expect(logger.info).toBeCalledWith(
+          `Received "${endpointToSomfyEventMap[url].split(':')[1]}" command for devices with uids [${devices
+            .map(({ uid }) => uid)
+            .join(', ')}]`
+        );
 
         expect(eventAggregator.publish).toBeCalledWith(
           endpointToSomfyEventMap[url],
@@ -281,6 +296,7 @@ describe('Rest Module', () => {
       users: {},
       eventAggregator,
       app,
+      logger,
     }).start();
 
     const post = getEndpointMethods(app).post['/schedule/execute'];

@@ -60,6 +60,10 @@ app.listen(environment.port, () => {
   const apiUserPassword = environment.basicAuth.password;
 
   RestModule({
+    logger: Logger({
+      ...loggerOptions,
+      componentName: 'RestModule',
+    }),
     app,
     eventAggregator,
     deviceGroups,
