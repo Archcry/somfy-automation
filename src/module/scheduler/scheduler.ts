@@ -4,7 +4,7 @@ import SunCalc from 'suncalc';
 import { Somfy as SomfyEvents } from '../../events';
 import { IEventAggregator } from '../../lib/eventaggregator/eventAggregator';
 import { ILogger } from '../../lib/logger/logger';
-import { DeviceGroup, FixedTimeSchedule, Schedule, SunCalcSchedule } from '../../types';
+import { Device, DeviceGroup, FixedTimeSchedule, Schedule, SunCalcSchedule } from '../../types';
 
 export const mapToEvent = (command: string) =>
   ({
@@ -22,6 +22,7 @@ export interface SchedulerArgs {
   eventAggregator: Pick<IEventAggregator, 'publish'>;
   schedules: Schedule[];
   deviceGroups: DeviceGroup[];
+  devices: Device[];
 }
 
 type Executable<T> = T & { execute: () => void };
@@ -30,7 +31,7 @@ const checkIntervalMs = 500;
 const debounceMs = 60000;
 const debounceImmidiate = true;
 
-export const Scheduler = ({ logger, eventAggregator, schedules, deviceGroups }: SchedulerArgs) => {
+export const Scheduler = ({ logger, eventAggregator, schedules, deviceGroups, devices }: SchedulerArgs) => {
   const isFixedTimeSchedule = (schedule: Executable<Schedule>): schedule is Executable<FixedTimeSchedule> =>
     schedule.type === 'fixed_time';
 
@@ -60,18 +61,19 @@ export const Scheduler = ({ logger, eventAggregator, schedules, deviceGroups }: 
   };
 
   const fire = (schedule: Schedule) => {
-    logger.info(`Firing command "${schedule.command.name}" for device groups ${schedule.deviceGroups}`);
+    logger.info(`Firing command "${schedule.command.name}" for device groups [${schedule.deviceGroups.join(', ')}]`);
 
-    const devices = deviceGroups
+    const deviceUrls = deviceGroups
       .filter(({ uid }) => schedule.deviceGroups.includes(uid))
       .flatMap(({ devices }) => devices)
-      .map((base64) => Buffer.from(base64, 'base64'))
-      .map((buff) => buff.toString('utf-8'));
+      .map((uid) => devices.find((dev) => dev.uid === uid))
+      .filter((device): device is Device => !!device)
+      .map(({ deviceUrl }) => deviceUrl);
 
     const event = mapToEvent(schedule.command.name);
 
     if (event) {
-      eventAggregator.publish(event, { devices });
+      eventAggregator.publish(event, { devices: deviceUrls });
     }
   };
 

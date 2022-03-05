@@ -8,8 +8,9 @@ import { Rest as RestModule } from './module/rest/rest';
 import { Scheduler as SchedulerModule } from './module/scheduler/scheduler';
 import { Somfy as SomfyModule } from './module/somfy/somfy';
 import { Somfy as SomfyService } from './service/somfy/somfy';
-import { DeviceGroup, Schedule } from './types';
+import { Device, DeviceGroup, Schedule } from './types';
 
+const devices: Device[] = JSON.parse(fs.readFileSync(environment.paths.devices, 'utf-8'));
 const deviceGroups: DeviceGroup[] = JSON.parse(fs.readFileSync(environment.paths.deviceGroups, 'utf-8'));
 const schedules: Schedule[] = JSON.parse(fs.readFileSync(environment.paths.schedules, 'utf-8'));
 
@@ -52,6 +53,7 @@ app.listen(environment.port, () => {
     eventAggregator,
     schedules,
     deviceGroups,
+    devices,
   }).start();
 
   const apiUserUsername = environment.basicAuth.username;
@@ -61,6 +63,7 @@ app.listen(environment.port, () => {
     app,
     eventAggregator,
     deviceGroups,
+    devices,
     schedules,
     users: {
       [apiUserUsername]: apiUserPassword,

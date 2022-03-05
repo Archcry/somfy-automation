@@ -36,6 +36,32 @@ describe('Rest Module', () => {
     publish: jest.fn(),
   };
 
+  const deviceGroups = [
+    {
+      uid: '831f2cb7-3208-4c6d-8915-f27360de39e3',
+      devices: ['068dfc0e-9c63-11ec-b909-0242ac120002'],
+      name: 'testLocation',
+    },
+    {
+      uid: '5cd6c40a-9c64-11ec-b909-0242ac120002',
+      devices: ['2f9cb9e0-9c64-11ec-b909-0242ac120002'],
+      name: 'testLocation2',
+    },
+  ];
+
+  const devices = [
+    {
+      uid: '068dfc0e-9c63-11ec-b909-0242ac120002',
+      name: 'testDevice',
+      deviceUrl: 'io://1234-5678-9101/1234567',
+    },
+    {
+      uid: '2f9cb9e0-9c64-11ec-b909-0242ac120002',
+      name: 'testDevice2',
+      deviceUrl: 'io://4321-8765-1019/7654321',
+    },
+  ];
+
   it('should register the correct handlers', () => {
     // Arrange
     const expectedEndpoints = {
@@ -46,7 +72,8 @@ describe('Rest Module', () => {
     // Act
     Rest({
       schedules: [],
-      deviceGroups: [],
+      deviceGroups,
+      devices,
       users: {},
       eventAggregator,
       app,
@@ -66,7 +93,8 @@ describe('Rest Module', () => {
     // Arange
     Rest({
       schedules: [],
-      deviceGroups: [],
+      deviceGroups,
+      devices,
       users: {},
       eventAggregator,
       app,
@@ -89,7 +117,7 @@ describe('Rest Module', () => {
       {
         type: 'fixed_time',
         dow: ['mon'],
-        deviceGroups: ['fbd0dbbe-9998-11ec-b909-0242ac120002'],
+        deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3'],
         timezone: 'Europe/Amsterdam',
         time: '11:00',
         command: {
@@ -101,7 +129,8 @@ describe('Rest Module', () => {
 
     Rest({
       schedules,
-      deviceGroups: [],
+      deviceGroups,
+      devices,
       users: {},
       eventAggregator,
       app,
@@ -115,22 +144,38 @@ describe('Rest Module', () => {
 
     // Assert
     expect(res.send).toBeCalledTimes(1);
-    expect(res.send).toBeCalledWith(schedules);
+    expect(res.send).toBeCalledWith([
+      {
+        type: 'fixed_time',
+        dow: ['mon'],
+        deviceGroups: [
+          {
+            uid: '831f2cb7-3208-4c6d-8915-f27360de39e3',
+            devices: [
+              {
+                uid: '068dfc0e-9c63-11ec-b909-0242ac120002',
+                name: 'testDevice',
+              },
+            ],
+            name: 'testLocation',
+          },
+        ],
+        timezone: 'Europe/Amsterdam',
+        time: '11:00',
+        command: {
+          name: 'up',
+          parameters: [],
+        },
+      },
+    ]);
   });
 
   it('should return the deviceGroups on GET /shutter/deviceGroups', () => {
     // Arrange
-    const devices = ['5fbc547c-7e92-445a-bb6a-71fb8ef65e62'];
-
     Rest({
       schedules: [],
-      deviceGroups: [
-        {
-          uid: 'fbd0dbbe-9998-11ec-b909-0242ac120002',
-          devices: devices.map((device) => Buffer.from(device, 'utf8').toString('base64')),
-          name: 'test',
-        },
-      ],
+      deviceGroups,
+      devices,
       users: {},
       eventAggregator,
       app,
@@ -146,25 +191,24 @@ describe('Rest Module', () => {
     expect(res.send).toBeCalledTimes(1);
     expect(res.send).toBeCalledWith([
       {
-        uid: 'fbd0dbbe-9998-11ec-b909-0242ac120002',
-        name: 'test',
+        uid: '831f2cb7-3208-4c6d-8915-f27360de39e3',
+        devices: [{ uid: '068dfc0e-9c63-11ec-b909-0242ac120002', name: 'testDevice' }],
+        name: 'testLocation',
+      },
+      {
+        uid: '5cd6c40a-9c64-11ec-b909-0242ac120002',
+        devices: [{ uid: '2f9cb9e0-9c64-11ec-b909-0242ac120002', name: 'testDevice2' }],
+        name: 'testLocation2',
       },
     ]);
   });
 
   it('should fire an event on all post handlers', () => {
     // Arrange
-    const devices = ['5fbc547c-7e92-445a-bb6a-71fb8ef65e62'];
-
     Rest({
       schedules: [],
-      deviceGroups: [
-        {
-          uid: 'fbd0dbbe-9998-11ec-b909-0242ac120002',
-          devices: devices.map((device) => Buffer.from(device, 'utf8').toString('base64')),
-          name: 'test',
-        },
-      ],
+      deviceGroups,
+      devices,
       users: {},
       eventAggregator,
       app,
@@ -175,7 +219,9 @@ describe('Rest Module', () => {
 
     // Act & Assert
     Object.entries(postEndpoints).forEach(([url, endpoint]) => {
-      const req = { body: { deviceGroups: ['fbd0dbbe-9998-11ec-b909-0242ac120002'] } };
+      const req = {
+        body: { deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3', '5cd6c40a-9c64-11ec-b909-0242ac120002'] },
+      };
       const res = { send: jest.fn() };
 
       endpoint(req, res);
@@ -183,9 +229,12 @@ describe('Rest Module', () => {
       expect(res.send).toBeCalledTimes(1);
       expect(res.send).toBeCalledWith('ok');
 
-      expect(eventAggregator.publish).toBeCalledWith(endpointToSomfyEventMap[url], {
-        devices: devices,
-      });
+      expect(eventAggregator.publish).toBeCalledWith(
+        endpointToSomfyEventMap[url],
+        expect.objectContaining({
+          devices: expect.arrayContaining(devices.map(({ deviceUrl }) => deviceUrl)),
+        })
+      );
     });
   });
 });

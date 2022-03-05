@@ -33,11 +33,31 @@ describe('Scheduler Module', () => {
     publish: jest.fn(),
   };
 
-  const deviceGroup = {
-    uid: '831f2cb7-3208-4c6d-8915-f27360de39e3',
-    devices: [Buffer.from('testDeviceUrl', 'utf-8').toString('base64')],
-    name: 'testLocation',
-  };
+  const deviceGroups = [
+    {
+      uid: '831f2cb7-3208-4c6d-8915-f27360de39e3',
+      devices: ['068dfc0e-9c63-11ec-b909-0242ac120002'],
+      name: 'testLocation',
+    },
+    {
+      uid: '5cd6c40a-9c64-11ec-b909-0242ac120002',
+      devices: ['2f9cb9e0-9c64-11ec-b909-0242ac120002'],
+      name: 'testLocation2',
+    },
+  ];
+
+  const devices = [
+    {
+      uid: '068dfc0e-9c63-11ec-b909-0242ac120002',
+      name: 'testDevice',
+      deviceUrl: 'io://1234-5678-9101/1234567',
+    },
+    {
+      uid: '2f9cb9e0-9c64-11ec-b909-0242ac120002',
+      name: 'testDevice2',
+      deviceUrl: 'io://4321-8765-1019/7654321',
+    },
+  ];
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -54,7 +74,7 @@ describe('Scheduler Module', () => {
     const schedule: FixedTimeSchedule = {
       type: 'fixed_time',
       dow: ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
-      deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3'],
+      deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3', '5cd6c40a-9c64-11ec-b909-0242ac120002'],
       timezone: timeZone,
       time: '11:00',
       command: {
@@ -68,7 +88,8 @@ describe('Scheduler Module', () => {
       logger,
       eventAggregator,
       schedules: [schedule],
-      deviceGroups: [deviceGroup],
+      deviceGroups: deviceGroups,
+      devices: devices,
     }).start();
 
     // Assert
@@ -77,10 +98,17 @@ describe('Scheduler Module', () => {
     jest.advanceTimersByTime(30000);
 
     expect(eventAggregator.publish).toBeCalledTimes(1);
-    expect(eventAggregator.publish).toBeCalledWith(SomfyEvents.Up, { devices: ['testDeviceUrl'] });
+    expect(eventAggregator.publish).toBeCalledWith(
+      SomfyEvents.Up,
+      expect.objectContaining({
+        devices: expect.arrayContaining(['io://1234-5678-9101/1234567', 'io://4321-8765-1019/7654321']),
+      })
+    );
 
     expect(logger.info).toBeCalledTimes(1);
-    expect(logger.info).toBeCalledWith('Firing command "up" for device groups 831f2cb7-3208-4c6d-8915-f27360de39e3');
+    expect(logger.info).toBeCalledWith(
+      'Firing command "up" for device groups [831f2cb7-3208-4c6d-8915-f27360de39e3, 5cd6c40a-9c64-11ec-b909-0242ac120002]'
+    );
   });
 
   it('should fire an event at sunrise', () => {
@@ -88,7 +116,7 @@ describe('Scheduler Module', () => {
     const schedule: SunCalcSchedule = {
       type: 'suncalc',
       dow: ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
-      deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3'],
+      deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3', '5cd6c40a-9c64-11ec-b909-0242ac120002'],
       kind: 'sunrise',
       coordinates: {
         longitude: 5.111568,
@@ -114,7 +142,8 @@ describe('Scheduler Module', () => {
       logger,
       eventAggregator,
       schedules: [schedule],
-      deviceGroups: [deviceGroup],
+      deviceGroups: deviceGroups,
+      devices: devices,
     }).start();
 
     // Assert
@@ -124,10 +153,17 @@ describe('Scheduler Module', () => {
     jest.advanceTimersByTime(1500);
 
     expect(eventAggregator.publish).toBeCalledTimes(1);
-    expect(eventAggregator.publish).toBeCalledWith(SomfyEvents.Up, { devices: ['testDeviceUrl'] });
+    expect(eventAggregator.publish).toBeCalledWith(
+      SomfyEvents.Up,
+      expect.objectContaining({
+        devices: expect.arrayContaining(['io://1234-5678-9101/1234567', 'io://4321-8765-1019/7654321']),
+      })
+    );
 
     expect(logger.info).toBeCalledTimes(1);
-    expect(logger.info).toBeCalledWith('Firing command "up" for device groups 831f2cb7-3208-4c6d-8915-f27360de39e3');
+    expect(logger.info).toBeCalledWith(
+      'Firing command "up" for device groups [831f2cb7-3208-4c6d-8915-f27360de39e3, 5cd6c40a-9c64-11ec-b909-0242ac120002]'
+    );
   });
 
   it('should not fire an event on a day that is not on the schedule', () => {
@@ -149,7 +185,8 @@ describe('Scheduler Module', () => {
       logger,
       eventAggregator,
       schedules: [schedule],
-      deviceGroups: [deviceGroup],
+      deviceGroups: deviceGroups,
+      devices: devices,
     }).start();
 
     jest.advanceTimersByTime(30000);
