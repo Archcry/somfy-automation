@@ -30,9 +30,25 @@ export interface FixedTimeSchedule extends BaseSchedule {
   timezone: string;
 }
 
+type SunCalcKind =
+  | 'sunrise'
+  | 'sunriseEnd'
+  | 'goldenHourEnd'
+  | 'solarNoon'
+  | 'goldenHour'
+  | 'sunsetStart'
+  | 'sunset'
+  | 'dusk'
+  | 'nauticalDusk'
+  | 'night'
+  | 'nadir'
+  | 'nightEnd'
+  | 'nauticalDawn'
+  | 'dawn';
+
 export interface SunCalcSchedule extends BaseSchedule {
   type: 'suncalc';
-  kind: 'sunrise' | 'sunset';
+  kind: SunCalcKind;
   coordinates: {
     latitude: number;
     longitude: number;

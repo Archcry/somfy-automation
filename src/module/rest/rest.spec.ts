@@ -248,7 +248,7 @@ describe('Rest Module', () => {
         endpoint(req, res);
 
         expect(res.send).toBeCalledTimes(1);
-        expect(res.send).toBeCalledWith('ok');
+        expect(res.send).toBeCalledWith({ success: true });
 
         expect(eventAggregator.publish).toBeCalledWith(
           endpointToSomfyEventMap[url],
@@ -299,7 +299,7 @@ describe('Rest Module', () => {
     post(req, res);
 
     // Assert
-    expect(res.send).toBeCalledWith('ok');
+    expect(res.send).toBeCalledWith({ success: true });
     expect(eventAggregator.publish).toBeCalledWith(SomfyEvents.Up, {
       devices: ['io://1234-5678-9101/1234567'],
     });

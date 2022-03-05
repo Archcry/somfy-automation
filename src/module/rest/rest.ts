@@ -77,7 +77,7 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
         );
       });
 
-      app.post<unknown, string, { schedule: string }>('/schedule/execute', (req, res) => {
+      app.post<unknown, { success: boolean }, { schedule: string }>('/schedule/execute', (req, res) => {
         const schedule = schedules.find(({ uid }) => req.body.schedule === uid);
 
         if (schedule) {
@@ -91,46 +91,46 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
 
           eventAggregator.publish(event, { devices: deviceUrls });
 
-          res.send('ok');
+          res.send({ success: true });
         }
 
         res.status(404).send();
       });
 
-      app.post<unknown, string, DevicesReq>('/shutter/up', (req, res) => {
+      app.post<unknown, { success: boolean }, DevicesReq>('/shutter/up', (req, res) => {
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Up, { devices: toDeviceUrls(req.body.devices) });
 
-        res.send('ok');
+        res.send({ success: true });
       });
 
-      app.post<unknown, string, DevicesReq>('/shutter/down', (req, res) => {
+      app.post<unknown, { success: boolean }, DevicesReq>('/shutter/down', (req, res) => {
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Down, { devices: toDeviceUrls(req.body.devices) });
 
-        res.send('ok');
+        res.send({ success: true });
       });
 
-      app.post<unknown, string, DevicesReq>('/shutter/wink', (req, res) => {
+      app.post<unknown, { success: boolean }, DevicesReq>('/shutter/wink', (req, res) => {
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Wink, { devices: toDeviceUrls(req.body.devices) });
 
-        res.send('ok');
+        res.send({ success: true });
       });
 
-      app.post<unknown, string, DevicesReq>('/shutter/identify', (req, res) => {
+      app.post<unknown, { success: boolean }, DevicesReq>('/shutter/identify', (req, res) => {
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Identify, { devices: toDeviceUrls(req.body.devices) });
 
-        res.send('ok');
+        res.send({ success: true });
       });
 
-      app.post<unknown, string, DevicesReq>('/shutter/stop', (req, res) => {
+      app.post<unknown, { success: boolean }, DevicesReq>('/shutter/stop', (req, res) => {
         eventAggregator.publish<SomfyEventData>(SomfyEvents.Stop, { devices: toDeviceUrls(req.body.devices) });
 
-        res.send('ok');
+        res.send({ success: true });
       });
 
-      app.post<unknown, string, DevicesReq>('/shutter/my', (req, res) => {
+      app.post<unknown, { success: boolean }, DevicesReq>('/shutter/my', (req, res) => {
         eventAggregator.publish<SomfyEventData>(SomfyEvents.My, { devices: toDeviceUrls(req.body.devices) });
 
-        res.send('ok');
+        res.send({ success: true });
       });
     },
   };
