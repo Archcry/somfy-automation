@@ -14,41 +14,24 @@ export interface RestModuleOptions {
   schedules: Schedule[];
 }
 
-export interface DeviceGroupReq {
-  deviceGroups: string[];
+export interface DevicesReq {
+  devices: string[];
 }
 
 export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, schedules }: RestModuleOptions) => {
   const filterUndefined = <T>(entry: T | undefined): entry is T => !!entry;
 
-  const toSomfyEventData = (deviceGroupUids: string[]) => {
-    const deviceUrls = deviceGroupUids
-      .flatMap((uid) => deviceGroups.find((dg) => dg.uid === uid))
-      .filter(filterUndefined)
-      .flatMap(({ devices }) => devices)
+  const toDeviceUrls = (deviceUids: string[]) => {
+    const deviceUrls = deviceUids
       .map((uid) => devices.find((dev) => dev.uid === uid))
       .filter(filterUndefined)
       .map(({ deviceUrl }) => deviceUrl);
 
-    return {
-      devices: Array.from(new Set(deviceUrls)),
-    };
+    return Array.from(new Set(deviceUrls));
   };
 
   const mapDevices = (deviceUids: string[]) =>
-    deviceUids
-      .map((deviceUid) => devices.find(({ uid }) => uid === deviceUid))
-      .filter(filterUndefined)
-      .map(({ uid, name }) => ({ uid, name }));
-
-  const mapDeviceGroups = (deviceGroupUids: string[]) =>
-    deviceGroupUids
-      .map((deviceGroupUid) => deviceGroups.find(({ uid }) => uid === deviceGroupUid))
-      .filter(filterUndefined)
-      .map(({ devices: devUids, ...rest }) => ({
-        ...rest,
-        devices: mapDevices(devUids),
-      }));
+    deviceUids.map((deviceUid) => devices.find(({ uid }) => uid === deviceUid)).filter(filterUndefined);
 
   return {
     start: () => {
@@ -66,17 +49,26 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
       });
 
       type DeviceGroupResp = Array<Omit<DeviceGroup, 'devices'> & { devices: Array<Omit<Device, 'deviceUrl'>> }>;
-      app.get<DeviceGroupResp>('/shutter/deviceGroups', (req, res) => {
+      app.get<unknown, DeviceGroupResp>('/shutter/deviceGroups', (_, res) => {
         res.send(
           deviceGroups.map(({ devices, ...rest }) => ({
             ...rest,
-            devices: mapDevices(devices),
+            devices: mapDevices(devices).map(({ uid, name }) => ({ uid, name })),
           }))
         );
       });
 
       type ScheduleResp = Array<Omit<Schedule, 'deviceGroups'> & { deviceGroups: DeviceGroupResp }>;
-      app.get<ScheduleResp>('/shutter/schedules', (_, res) => {
+      app.get<unknown, ScheduleResp>('/shutter/schedules', (_, res) => {
+        const mapDeviceGroups = (deviceGroupUids: string[]) =>
+          deviceGroupUids
+            .map((deviceGroupUid) => deviceGroups.find(({ uid }) => uid === deviceGroupUid))
+            .filter(filterUndefined)
+            .map(({ devices: devUids, ...rest }) => ({
+              ...rest,
+              devices: mapDevices(devUids).map(({ uid, name }) => ({ uid, name })),
+            }));
+
         res.send(
           schedules.map(({ deviceGroups: dgs, ...rest }) => ({
             ...rest,
@@ -85,38 +77,38 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
         );
       });
 
-      app.post<DeviceGroupReq>('/shutter/up', (req, res) => {
-        eventAggregator.publish<SomfyEventData>(SomfyEvents.Up, toSomfyEventData(req.body.deviceGroups));
+      app.post<unknown, string, DevicesReq>('/shutter/up', (req, res) => {
+        eventAggregator.publish<SomfyEventData>(SomfyEvents.Up, { devices: toDeviceUrls(req.body.devices) });
 
         res.send('ok');
       });
 
-      app.post<DeviceGroupReq>('/shutter/down', (req, res) => {
-        eventAggregator.publish<SomfyEventData>(SomfyEvents.Down, toSomfyEventData(req.body.deviceGroups));
+      app.post<unknown, string, DevicesReq>('/shutter/down', (req, res) => {
+        eventAggregator.publish<SomfyEventData>(SomfyEvents.Down, { devices: toDeviceUrls(req.body.devices) });
 
         res.send('ok');
       });
 
-      app.post<DeviceGroupReq>('/shutter/wink', (req, res) => {
-        eventAggregator.publish<SomfyEventData>(SomfyEvents.Wink, toSomfyEventData(req.body.deviceGroups));
+      app.post<unknown, string, DevicesReq>('/shutter/wink', (req, res) => {
+        eventAggregator.publish<SomfyEventData>(SomfyEvents.Wink, { devices: toDeviceUrls(req.body.devices) });
 
         res.send('ok');
       });
 
-      app.post<DeviceGroupReq>('/shutter/identify', (req, res) => {
-        eventAggregator.publish<SomfyEventData>(SomfyEvents.Identify, toSomfyEventData(req.body.deviceGroups));
+      app.post<unknown, string, DevicesReq>('/shutter/identify', (req, res) => {
+        eventAggregator.publish<SomfyEventData>(SomfyEvents.Identify, { devices: toDeviceUrls(req.body.devices) });
 
         res.send('ok');
       });
 
-      app.post<DeviceGroupReq>('/shutter/stop', (req, res) => {
-        eventAggregator.publish<SomfyEventData>(SomfyEvents.Stop, toSomfyEventData(req.body.deviceGroups));
+      app.post<unknown, string, DevicesReq>('/shutter/stop', (req, res) => {
+        eventAggregator.publish<SomfyEventData>(SomfyEvents.Stop, { devices: toDeviceUrls(req.body.devices) });
 
         res.send('ok');
       });
 
-      app.post<DeviceGroupReq>('/shutter/my', (req, res) => {
-        eventAggregator.publish<SomfyEventData>(SomfyEvents.My, toSomfyEventData(req.body.deviceGroups));
+      app.post<unknown, string, DevicesReq>('/shutter/my', (req, res) => {
+        eventAggregator.publish<SomfyEventData>(SomfyEvents.My, { devices: toDeviceUrls(req.body.devices) });
 
         res.send('ok');
       });

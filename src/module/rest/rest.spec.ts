@@ -220,7 +220,7 @@ describe('Rest Module', () => {
     // Act & Assert
     Object.entries(postEndpoints).forEach(([url, endpoint]) => {
       const req = {
-        body: { deviceGroups: ['831f2cb7-3208-4c6d-8915-f27360de39e3', '5cd6c40a-9c64-11ec-b909-0242ac120002'] },
+        body: { devices: ['068dfc0e-9c63-11ec-b909-0242ac120002', '2f9cb9e0-9c64-11ec-b909-0242ac120002'] },
       };
       const res = { send: jest.fn() };
 
