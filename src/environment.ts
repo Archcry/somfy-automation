@@ -8,6 +8,9 @@ const getFromEnvOrThrow = (key: string): string => {
 
 export const environment = {
   port: process.env['PORT'] ?? 3000,
+  cors: {
+    allowedOrigins: process.env['CORS_ALLOWED_ORIGINS'],
+  },
   somfy: {
     host: getFromEnvOrThrow('SOMFY_API_HOST'),
     apiKey: getFromEnvOrThrow('SOMFY_API_KEY'),

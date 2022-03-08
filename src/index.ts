@@ -69,6 +69,7 @@ app.listen(environment.port, () => {
     deviceGroups,
     devices,
     schedules,
+    allowedOrigins: environment.cors.allowedOrigins ?? '',
     users: {
       [apiUserUsername]: apiUserPassword,
     },

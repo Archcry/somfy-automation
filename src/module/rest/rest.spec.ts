@@ -90,6 +90,7 @@ describe('Rest Module', () => {
       eventAggregator,
       app,
       logger,
+      allowedOrigins: '',
     }).start();
 
     // Assert
@@ -99,7 +100,7 @@ describe('Rest Module', () => {
     expect(app.post).toBeCalledTimes(expectedEndpoints.post.length);
     expectedEndpoints.post.forEach((endpoint) => expect(app.post).toBeCalledWith(endpoint, expect.any(Function)));
 
-    expect(app.use).toBeCalledTimes(2);
+    expect(app.use).toBeCalledTimes(3);
   });
 
   it('should return "hello world!" on "/"', () => {
@@ -112,6 +113,7 @@ describe('Rest Module', () => {
       eventAggregator,
       app,
       logger,
+      allowedOrigins: '',
     }).start();
 
     const rootEndpoint = getEndpointMethods(app).get['/'];
@@ -150,6 +152,7 @@ describe('Rest Module', () => {
       eventAggregator,
       app,
       logger,
+      allowedOrigins: '',
     }).start();
 
     const schedulesEndpoint = getEndpointMethods(app).get['/shutter/schedules'];
@@ -197,6 +200,7 @@ describe('Rest Module', () => {
       eventAggregator,
       app,
       logger,
+      allowedOrigins: '',
     }).start();
 
     const deviceGroupsEndpoint = getEndpointMethods(app).get['/shutter/deviceGroups'];
@@ -240,6 +244,7 @@ describe('Rest Module', () => {
       eventAggregator,
       app,
       logger,
+      allowedOrigins: '',
     }).start();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -297,6 +302,7 @@ describe('Rest Module', () => {
       eventAggregator,
       app,
       logger,
+      allowedOrigins: '',
     }).start();
 
     const post = getEndpointMethods(app).post['/schedule/execute'];

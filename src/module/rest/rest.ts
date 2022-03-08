@@ -1,4 +1,5 @@
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import { Express } from 'express';
 import basicAuth from 'express-basic-auth';
 import { commandToSomfyEvent, Somfy as SomfyEvents, SomfyEventData } from '../../events';
@@ -14,13 +15,23 @@ export interface RestModuleOptions {
   devices: Device[];
   logger: Pick<ILogger, 'info'>;
   schedules: Schedule[];
+  allowedOrigins: string;
 }
 
 export interface DevicesReq {
   devices: string[];
 }
 
-export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, schedules, logger }: RestModuleOptions) => {
+export const Rest = ({
+  app,
+  users,
+  eventAggregator,
+  deviceGroups,
+  devices,
+  schedules,
+  logger,
+  allowedOrigins,
+}: RestModuleOptions) => {
   const filterUndefined = <T>(entry: T | undefined): entry is T => !!entry;
 
   const toDeviceUrls = (deviceUids: string[]) => {
@@ -37,6 +48,14 @@ export const Rest = ({ app, users, eventAggregator, deviceGroups, devices, sched
 
   return {
     start: () => {
+      app.use(
+        cors({
+          origin: (_, callback) => {
+            callback(null, allowedOrigins.split(','));
+          },
+        })
+      );
+
       app.use(
         basicAuth({
           users: users,
