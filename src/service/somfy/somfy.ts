@@ -18,14 +18,31 @@ export interface SomfyResponse {
   execId: string;
 }
 
+export interface SomfyDevice {
+  deviceUrl: string;
+  isMoving: boolean;
+}
+
 export interface ISomfy {
   exec: (commands: Command[]) => Promise<SomfyResponse>;
+  getDevices: () => Promise<SomfyDevice[]>;
 }
 
 export interface Command {
   deviceUrl: string;
   command: string;
   parameters?: CommandParameter[];
+}
+
+interface State {
+  type: number;
+  name: string;
+  value: number;
+}
+
+interface GetDevicesResponse {
+  deviceURL: string;
+  states: State[];
 }
 
 export const Somfy = ({ httpClient, options }: SomfyConstructorArgs) => {
@@ -56,7 +73,32 @@ export const Somfy = ({ httpClient, options }: SomfyConstructorArgs) => {
     return httpClient(url, request).then((response) => response.json());
   };
 
+  const mapToDevice = ({ deviceURL, states }: GetDevicesResponse) => {
+    const state = states.find((state: State) => state.name === 'core:MovingState');
+
+    return {
+      deviceUrl: deviceURL,
+      isMoving: Boolean(state?.value),
+    };
+  };
+
+  const getDevices = async () => {
+    const url = `http://${options.host}/enduser-mobile-web/1/enduserAPI/setup/devices`;
+
+    const requestOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': options.apiKey,
+      },
+    };
+
+    return await httpClient(url, requestOptions)
+      .then((res) => res.json())
+      .then((devices) => devices.map(mapToDevice));
+  };
+
   return {
     exec,
+    getDevices,
   };
 };
