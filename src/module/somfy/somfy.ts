@@ -5,7 +5,7 @@ import { CommandParameter, ISomfy as SomfyService } from '../../service/somfy/so
 
 export interface SomfyModuleArgs {
   eventAggregator: Pick<IEventAggregator, 'subscribe'>;
-  somfyService: Pick<SomfyService, 'exec'>;
+  somfyService: Pick<SomfyService, 'exec' | 'getDevices'>;
   logger: Pick<ILogger, 'info' | 'error'>;
 }
 
@@ -25,6 +25,30 @@ export const Somfy = ({ eventAggregator: ea, somfyService, logger }: SomfyModule
     somfyService.exec(commands).then(logSuccess(command)).catch(logError(command));
   };
 
+  const execMyForDevices = async (devices: string[]) => {
+    if (devices.length > 0) {
+      const isMoving = await somfyService
+        .getDevices()
+        .then((somfyDevices) => somfyDevices.filter((device) => devices.includes(device.deviceUrl)))
+        .then((somfyDevices) => somfyDevices.find((device) => device.isMoving))
+        .then((somfyDevice) => !!somfyDevice)
+        .catch((err) => logger.error(err));
+
+      if (isMoving) {
+        logger.info('Sending "stop" instead of "my" because at least one of the shutters is moving');
+      }
+
+      const command = isMoving ? 'stop' : 'my';
+
+      if (command) {
+        somfyService
+          .exec(devices.map(createCommand(command)))
+          .then(logSuccess(command))
+          .catch(logError(command));
+      }
+    }
+  };
+
   return {
     start: () => {
       ea.subscribe(SomfyEvents.Up, (_, { devices }: SomfyEventData) => execForDevices(devices)('up'));
@@ -32,7 +56,7 @@ export const Somfy = ({ eventAggregator: ea, somfyService, logger }: SomfyModule
       ea.subscribe(SomfyEvents.Stop, (_, { devices }: SomfyEventData) => execForDevices(devices)('stop'));
       ea.subscribe(SomfyEvents.Identify, (_, { devices }: SomfyEventData) => execForDevices(devices)('identify'));
       ea.subscribe(SomfyEvents.Wink, (_, { devices }: SomfyEventData) => execForDevices(devices)('wink'));
-      ea.subscribe(SomfyEvents.My, (_, { devices }: SomfyEventData) => execForDevices(devices)('my'));
+      ea.subscribe(SomfyEvents.My, (_, { devices }: SomfyEventData) => execMyForDevices(devices));
 
       ea.subscribe(SomfyEvents.SetDeployment, (_, { devices }: SomfySetDeploymentData) => {
         const command = 'setDeployment';

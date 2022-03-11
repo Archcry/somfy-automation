@@ -32,11 +32,18 @@ describe('Somfy Module', () => {
 
   const somfyService = {
     exec: jest.fn(),
+    getDevices: jest.fn(),
   };
 
   beforeEach(() => {
     eventAggregator = EventAggregator(console);
     somfyService.exec.mockResolvedValue({ execId: 'some id' });
+    somfyService.getDevices.mockResolvedValue([
+      {
+        deviceUrl: 'io://1234-5678-9101/1234567',
+        isMoving: true,
+      },
+    ]);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -151,5 +158,60 @@ describe('Somfy Module', () => {
         parameters: [percentage],
       },
     ]);
+  });
+
+  it('should send "stop" instead of "my" when one of the requested devices is moving', async () => {
+    // Arrange
+    const deviceUrl = 'io://io://AAAA-BBBB-CCCC/DDDDDDD';
+    const subscriptionSpy = jest.spyOn(eventAggregator, 'subscribe');
+
+    Somfy({ eventAggregator, logger, somfyService }).start();
+
+    const subscriptions = toCallableMethods(subscriptionSpy);
+
+    somfyService.getDevices.mockResolvedValue([
+      {
+        deviceUrl: 'io://io://AAAA-BBBB-CCCC/DDDDDDD',
+        isMoving: true,
+      },
+    ]);
+
+    // Act
+    await subscriptions[SomfyEvents.My](SomfyEvents.My, {
+      devices: [deviceUrl],
+    });
+
+    // Assert
+    expect(logger.info).toBeCalledTimes(2);
+    expect(logger.info).toBeCalledWith('Sending "stop" instead of "my" because at least one of the shutters is moving');
+    expect(logger.info).toBeCalledWith(`Succesfully send command "stop"`);
+    expect(somfyService.exec).toBeCalledTimes(1);
+    expect(somfyService.exec).toBeCalledWith([
+      {
+        deviceUrl,
+        command: eventNameToCommandName[SomfyEvents.Stop],
+      },
+    ]);
+  });
+
+  it('should log an error when "getDevices" fails to receive devices', async () => {
+    // Arrange
+    const deviceUrl = 'io://io://AAAA-BBBB-CCCC/DDDDDDD';
+    const subscriptionSpy = jest.spyOn(eventAggregator, 'subscribe');
+
+    Somfy({ eventAggregator, logger, somfyService }).start();
+
+    const subscriptions = toCallableMethods(subscriptionSpy);
+
+    somfyService.getDevices.mockRejectedValue('error');
+
+    // Act
+    await subscriptions[SomfyEvents.My](SomfyEvents.My, {
+      devices: [deviceUrl],
+    });
+
+    // Assert
+    expect(logger.error).toBeCalledTimes(1);
+    expect(logger.error).toBeCalledWith('error');
   });
 });
