@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { Logger, LogLevel } from './logger';
 
 describe('Logger', () => {
@@ -12,9 +13,26 @@ describe('Logger', () => {
   const componentName = 'LoggerTest';
   const logLevel = LogLevel.Trace;
 
+  const timeZone = 'UTC';
+  const dateTimeObj = {
+    year: 2022,
+    month: 3,
+    day: 7,
+    hour: 10,
+    minute: 59,
+    second: 59,
+    milliSecond: 0,
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+
+    jest.setSystemTime(DateTime.fromObject(dateTimeObj, { zone: timeZone }).toJSDate());
+  });
+
   afterEach(() => jest.resetAllMocks());
 
-  it('should prefix the logged message with the componentName and logLevel', () => {
+  it('should prefix the logged message with the time, componentName and logLevel', () => {
     // Arrange
     const logger = Logger({
       baseLogger,
@@ -30,11 +48,11 @@ describe('Logger', () => {
     logger.error('test');
 
     // Assert
-    expect(baseLogger.trace).toBeCalledWith('[TRACE][LOGGERTEST]: test');
-    expect(baseLogger.debug).toBeCalledWith('[DEBUG][LOGGERTEST]: test');
-    expect(baseLogger.info).toBeCalledWith('[INFO][LOGGERTEST]: test');
-    expect(baseLogger.warn).toBeCalledWith('[WARN][LOGGERTEST]: test');
-    expect(baseLogger.error).toBeCalledWith('[ERROR][LOGGERTEST]: test');
+    expect(baseLogger.trace).toBeCalledWith('[TRACE][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.debug).toBeCalledWith('[DEBUG][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.info).toBeCalledWith('[INFO][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.warn).toBeCalledWith('[WARN][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.error).toBeCalledWith('[ERROR][2022-03-07 10:59:59,000][LOGGERTEST]: test');
   });
 
   it('should not log trace messages on loglevel debug', () => {
@@ -56,10 +74,10 @@ describe('Logger', () => {
 
     // Assert
     expect(baseLogger.trace).not.toBeCalled();
-    expect(baseLogger.debug).toBeCalledWith('[DEBUG][LOGGERTEST]: test');
-    expect(baseLogger.info).toBeCalledWith('[INFO][LOGGERTEST]: test');
-    expect(baseLogger.warn).toBeCalledWith('[WARN][LOGGERTEST]: test');
-    expect(baseLogger.error).toBeCalledWith('[ERROR][LOGGERTEST]: test');
+    expect(baseLogger.debug).toBeCalledWith('[DEBUG][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.info).toBeCalledWith('[INFO][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.warn).toBeCalledWith('[WARN][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.error).toBeCalledWith('[ERROR][2022-03-07 10:59:59,000][LOGGERTEST]: test');
   });
 
   it('should not log trace & debug messages on loglevel info', () => {
@@ -82,9 +100,9 @@ describe('Logger', () => {
     // Assert
     expect(baseLogger.trace).not.toBeCalled();
     expect(baseLogger.debug).not.toBeCalled();
-    expect(baseLogger.info).toBeCalledWith('[INFO][LOGGERTEST]: test');
-    expect(baseLogger.warn).toBeCalledWith('[WARN][LOGGERTEST]: test');
-    expect(baseLogger.error).toBeCalledWith('[ERROR][LOGGERTEST]: test');
+    expect(baseLogger.info).toBeCalledWith('[INFO][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.warn).toBeCalledWith('[WARN][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.error).toBeCalledWith('[ERROR][2022-03-07 10:59:59,000][LOGGERTEST]: test');
   });
 
   it('should not log info, trace & debug messages on loglevel warn', () => {
@@ -108,8 +126,8 @@ describe('Logger', () => {
     expect(baseLogger.trace).not.toBeCalled();
     expect(baseLogger.debug).not.toBeCalled();
     expect(baseLogger.info).not.toBeCalled();
-    expect(baseLogger.warn).toBeCalledWith('[WARN][LOGGERTEST]: test');
-    expect(baseLogger.error).toBeCalledWith('[ERROR][LOGGERTEST]: test');
+    expect(baseLogger.warn).toBeCalledWith('[WARN][2022-03-07 10:59:59,000][LOGGERTEST]: test');
+    expect(baseLogger.error).toBeCalledWith('[ERROR][2022-03-07 10:59:59,000][LOGGERTEST]: test');
   });
 
   it('should not log warn, info, trace & debug messages on loglevel error', () => {
@@ -134,7 +152,7 @@ describe('Logger', () => {
     expect(baseLogger.debug).not.toBeCalled();
     expect(baseLogger.info).not.toBeCalled();
     expect(baseLogger.warn).not.toBeCalled();
-    expect(baseLogger.error).toBeCalledWith('[ERROR][LOGGERTEST]: test');
+    expect(baseLogger.error).toBeCalledWith('[ERROR][2022-03-07 10:59:59,000][LOGGERTEST]: test');
   });
 
   it('should append all additional parameters to the baselogger on log', () => {
@@ -150,6 +168,8 @@ describe('Logger', () => {
 
     // Assert
     expect(baseLogger.info).toBeCalledTimes(1);
-    expect(baseLogger.info).toBeCalledWith('[INFO][LOGGERTEST]: test', 1, ['test2'], { hello: 'world' });
+    expect(baseLogger.info).toBeCalledWith('[INFO][2022-03-07 10:59:59,000][LOGGERTEST]: test', 1, ['test2'], {
+      hello: 'world',
+    });
   });
 });
